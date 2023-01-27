@@ -1,3 +1,4 @@
 *.code-workspace
 sensitive-content-class
 node_modules
+scripts/
