@@ -1,0 +1,23 @@
+{
+  "name": "nsfw-blocker",
+  "version": "0.1.0",
+  "description": "A Chrome extension which blocks NSFW images on any pages you choose.",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "node_modules/.bin/tsc --outDir scripts/ scripts_src/*",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Quinn Neufeld",
+  "license": "WTFPL",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quinn-n/NSFW-Blocker-Extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/quinn-n/NSFW-Blocker-Extension/issues"
+  },
+  "homepage": "https://github.com/quinn-n/NSFW-Blocker-Extension#readme",
+  "dependencies": {
+    "typescript": "^4.9.4"
+  }
+}
