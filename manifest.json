@@ -7,10 +7,8 @@
         "default_popup": "index.html",
         "default_icon": "no_under_18.png"
     },
-    "content_scripts": [
-        {
-            "js": ["scripts/filter_page.js"]
-        }
+    "permissions": [
+        "storage"
     ],
     "host_permissions": [
         "<all_urls>"

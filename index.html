@@ -3,7 +3,7 @@
     <body>
         <div class="enable">
             <label class="switch">
-                <input type="checkbox">
+                <input type="checkbox" id="enableswitch">
                 <span class="slider round"></span>
             </label>
             <div class="enable">
@@ -12,7 +12,8 @@
         </div>
         <div class="slidecontainer">
             <span>Safe Threshold</span>
-            <input type="range" min="0" max="100" value="90">
+            <input type="range" min="0" max="100" value="90" id="thresholdslider">
         </div>
     </body>
+    <script src="scripts/index.mjs" type="module"></script>
 </html>
