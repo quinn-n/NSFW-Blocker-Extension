@@ -13,14 +13,41 @@ function addCallbacks() {
 function updateSiteSettings() {
     const enableSwitch = document.getElementById("enableswitch") as HTMLInputElement | null;
     const thresholdSlider = document.getElementById("thresholdslider") as HTMLInputElement | null;
+    if (enableSwitch === null || thresholdSlider === null) {
+        console.error("enableSwitch or thresholdSlider not defined");
+        return;
+    }
+
+    const enabled = enableSwitch.checked;
+
     getCurrentTabUrl().then(
         function(root_url) {
-            chrome.storage.sync.set({
-                [root_url]: {
-                    "enabled": enableSwitch?.checked,
-                    "threshold": thresholdSlider?.value
-                }
-            });
+            if (enabled) {
+                chrome.permissions.request({
+                    origins: [root_url + "/*"],
+                },
+                function(permissionsGranted) {
+                    if (permissionsGranted) {
+                        chrome.storage.sync.set({
+                            [root_url]: {
+                                "enabled": true,
+                                "threshold": thresholdSlider.valueAsNumber
+                            }
+                        });
+                    }
+                });
+            } else {
+                chrome.permissions.remove({
+                    origins: [root_url + "/*"],
+                });
+
+                chrome.storage.sync.set({
+                    [root_url]: {
+                        "enabled": false,
+                        "threshold": thresholdSlider.valueAsNumber
+                    }
+                });
+            }
         }
     );
 }

@@ -6,6 +6,10 @@ function loadSiteSettings(site: string) {
             const enableSwitch = document.getElementById("enableswitch") as HTMLInputElement | null;
             const thresholdSlider = document.getElementById("thresholdslider") as HTMLInputElement | null;
             if (enableSwitch === null || thresholdSlider === null) {
+                console.error("enableswitch or thresholdslider null");
+                return;
+            }
+            if (site_settings[site] == undefined) {
                 return;
             }
             enableSwitch.checked = site_settings[site]["enabled"];
