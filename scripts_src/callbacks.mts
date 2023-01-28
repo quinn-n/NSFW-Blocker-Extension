@@ -1,19 +1,12 @@
 import { getCurrentTabUrl } from "./common.mjs";
 
+// Adds callbacks to widgets
 function addCallbacks() {
     const enableSwitch = document.getElementById("enableswitch");
-    enableSwitch?.addEventListener("change", updateEnabled);
+    enableSwitch?.addEventListener("change", updateSiteSettings);
 
     const thresholdSlider = document.getElementById("thresholdslider");
-    thresholdSlider?.addEventListener("change", updateThreshold);
-}
-
-function updateEnabled(ev: Event) {
-    updateSiteSettings();
-}
-
-function updateThreshold() {
-    updateSiteSettings();
+    thresholdSlider?.addEventListener("change", updateSiteSettings);
 }
 
 // Updates site settings in storage
