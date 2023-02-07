@@ -19,4 +19,13 @@ function getCurrentTabUrl() {
     return p;
 }
 
-export {getCurrentTabUrl};
+// Gets an element by class name. Returns undefined if the element does not exist.
+function getElementByClassName(div: HTMLDivElement, className: string) {
+    const element = div.getElementsByClassName(className)[0];
+    if (element === undefined) {
+        console.error("got undefined element", className, "in", div);
+    }
+    return element;
+}
+
+export {getCurrentTabUrl, getElementByClassName};

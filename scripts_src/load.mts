@@ -1,19 +1,25 @@
+import { getElementByClassName } from "./common.mjs";
+import { addExistingRule, createRuleDiv } from "./rules.mjs";
 
 // Loads settings for the current site into the elements
-function loadSiteSettings(site: string) {
-    chrome.storage.sync.get(site).then(
-        function(site_settings) {
-            const enableSwitch = document.getElementById("enableswitch") as HTMLInputElement | null;
-            const thresholdSlider = document.getElementById("thresholdslider") as HTMLInputElement | null;
-            if (enableSwitch === null || thresholdSlider === null) {
-                console.error("enableswitch or thresholdslider null");
-                return;
+function loadSiteSettings() {
+    chrome.storage.sync.get().then(
+        function(sites) {
+            for (const url in sites) {
+                const ruleSensitivity = sites[url];
+                const ruleDiv = createRuleDiv();
+
+                const ruleInput = getElementByClassName(ruleDiv, "ruleurlinput") as HTMLInputElement | undefined;
+                const ruleOutput = getElementByClassName(ruleDiv, "ruleurloutput") as HTMLOutputElement | undefined;
+                const sensitivitySlider = getElementByClassName(ruleDiv, "rulesensitivity") as HTMLInputElement | undefined;
+                if (ruleInput === undefined || ruleOutput === undefined || sensitivitySlider === undefined) {
+                    return;
+                }
+                ruleInput.value = url;
+                ruleOutput.value = url;
+                sensitivitySlider.value = ruleSensitivity;
+                addExistingRule(ruleDiv);
             }
-            if (site_settings[site] == undefined) {
-                return;
-            }
-            enableSwitch.checked = site_settings[site]["enabled"];
-            thresholdSlider.value = site_settings[site]["threshold"];
         }
     );
 }

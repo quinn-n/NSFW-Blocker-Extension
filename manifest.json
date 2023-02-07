@@ -7,10 +7,17 @@
         "default_popup": "index.html",
         "default_icon": "no_under_18.png"
     },
+    "background": {
+        "service_worker": "scripts/intercept_nsfw_background.js",
+        "type": "module"
+    },
     "permissions": [
-        "storage"
+        "storage",
+        "webRequest",
+        "scripting"
     ],
-    "optional_host_permissions": [
-        "<all_urls>"
+    "host_permissions": [
+        "<all_urls>",
+        "https://youtubenotifier.com:8000/*"
     ]
 }

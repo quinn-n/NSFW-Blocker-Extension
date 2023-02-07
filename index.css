@@ -1,3 +1,29 @@
+body {
+  display: flexbox;
+  width: max-content;
+  justify-content: center;
+  text-align: center;
+}
+.existingrules {
+  border: 1px solid gray;
+  margin: 5px;
+}
+.listrule {
+  margin: 5px;
+}
+.ruledeletebutton {
+  background-image: url("trash_icon.jpg");
+  background-size: 20px 20px;
+  width: 20px;
+  height: 20px;
+}
+#rulelist {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  vertical-align: middle;
+}
 .switch {
   position: relative;
   display: inline-block;
@@ -52,9 +78,6 @@ input:focus + .slider {
 }
 .slider.round:before {
   border-radius: 50%;
-}
-body {
-  display: block;
 }
 .enable {
   display: flex;

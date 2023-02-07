@@ -1,12 +1,10 @@
 import { getCurrentTabUrl } from "./common.mjs";
+import { addNewRule } from "./rules.mjs";
 
 // Adds callbacks to widgets
 function addCallbacks() {
-    const enableSwitch = document.getElementById("enableswitch");
-    enableSwitch?.addEventListener("change", updateSiteSettings);
-
-    const thresholdSlider = document.getElementById("thresholdslider");
-    thresholdSlider?.addEventListener("change", updateSiteSettings);
+    const addRuleButton = document.getElementById("addrulebutton");
+    addRuleButton?.addEventListener("click", addNewRule);
 }
 
 // Updates site settings in storage
@@ -21,28 +19,42 @@ function updateSiteSettings() {
     const enabled = enableSwitch.checked;
 
     getCurrentTabUrl().then(
-        function(root_url) {
+        function(rootUrl) {
             if (enabled) {
+                /*
                 chrome.permissions.request({
-                    origins: [root_url + "/*"],
+                    origins: [rootUrl + "/*"],
                 },
                 function(permissionsGranted) {
                     if (permissionsGranted) {
                         chrome.storage.sync.set({
-                            [root_url]: {
+                            [rootUrl]: {
                                 "enabled": true,
                                 "threshold": thresholdSlider.valueAsNumber
                             }
                         });
+                        console.log("Registering content script for", rootUrl);
+                        addContentScriptUrl(rootUrl + "/*");
                     }
                 });
-            } else {
-                chrome.permissions.remove({
-                    origins: [root_url + "/*"],
+                */
+                chrome.storage.sync.set({
+                    [rootUrl]: {
+                        "enabled": true,
+                        "threshold": thresholdSlider.valueAsNumber
+                    }
                 });
+                console.log("Registering content script for", rootUrl);
+                addListenerForUrl(rootUrl + "/*");
+            } else {
+                /*
+                chrome.permissions.remove({
+                    origins: [rootUrl + "/*"],
+                });
+                */
 
                 chrome.storage.sync.set({
-                    [root_url]: {
+                    [rootUrl]: {
                         "enabled": false,
                         "threshold": thresholdSlider.valueAsNumber
                     }
@@ -50,6 +62,10 @@ function updateSiteSettings() {
             }
         }
     );
+}
+
+function addListenerForUrl(rootUrl: string) {
+
 }
 
 export {addCallbacks};
