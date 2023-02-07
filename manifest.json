@@ -11,6 +11,12 @@
         "service_worker": "scripts/intercept_nsfw_service_worker.js",
         "type": "module"
     },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["scripts/intercept_nsfw_content_script.js"]
+        }
+    ],
     "permissions": [
         "storage",
         "webRequest",
