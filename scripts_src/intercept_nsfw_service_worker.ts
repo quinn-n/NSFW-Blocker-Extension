@@ -47,7 +47,8 @@ function blockNSFWRequestCallback(details: chrome.webRequest.WebRequestBodyDetai
             response.json().then(
                 function(responseJson) {
                     if (responseJson.data == undefined) {
-                        console.log("got undefined data:", responseJson);
+                        console.warn("got undefined data:", responseJson, "for image", details.url);
+                        return;
                     }
                     const safeValue = responseJson.data.drawings + responseJson.data.neutral;
                     // Tell the content script to unhide safe images
