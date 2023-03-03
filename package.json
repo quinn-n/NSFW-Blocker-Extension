@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node_modules/.bin/tsc -p scripts_src/tsconfig.json",
     "watch": "node_modules/.bin/tsc -w -p scripts_src/tsconfig.json",
+    "tslint": "node_modules/.bin/tslint --project scripts_src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Quinn Neufeld",
@@ -21,6 +22,7 @@
   "dependencies": {
     "@types/chrome": "^0.0.210",
     "chrome-types": "^0.1.168",
+    "tslint": "^6.1.3",
     "typescript": "^4.9.4"
   }
 }

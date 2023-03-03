@@ -12,12 +12,14 @@ function loadSiteSettings() {
                 const ruleInput = getElementByClassName(ruleDiv, "ruleurlinput") as HTMLInputElement | undefined;
                 const ruleOutput = getElementByClassName(ruleDiv, "ruleurloutput") as HTMLOutputElement | undefined;
                 const sensitivitySlider = getElementByClassName(ruleDiv, "rulesensitivity") as HTMLInputElement | undefined;
-                if (ruleInput === undefined || ruleOutput === undefined || sensitivitySlider === undefined) {
+                const sensitivityDisplay = getElementByClassName(ruleDiv, "sensitivitydisplay") as HTMLInputElement | undefined;
+                if (ruleInput === undefined || ruleOutput === undefined || sensitivitySlider === undefined || sensitivityDisplay === undefined) {
                     return;
                 }
                 ruleInput.value = url;
                 ruleOutput.value = url;
                 sensitivitySlider.value = ruleSensitivity;
+                sensitivityDisplay.value = ruleSensitivity;
                 addExistingRule(ruleDiv);
             }
         }

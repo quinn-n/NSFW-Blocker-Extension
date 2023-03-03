@@ -43,13 +43,20 @@ function createRuleDiv() {
     urlInput.addEventListener("focusout", saveUrl);
     ruleDiv.appendChild(urlInput);
 
+    const sensitivityDisplay = document.createElement("input");
+    sensitivityDisplay.className = "sensitivitydisplay";
+    sensitivityDisplay.value = "95";
+    sensitivityDisplay.addEventListener("change", () => updateRule(ruleDiv, sensitivityDisplay));
+    ruleDiv.appendChild(sensitivityDisplay);
+
     const ruleSensitivity = document.createElement("input");
     ruleSensitivity.className = "rulesensitivity"
     ruleSensitivity.type = "range";
     ruleSensitivity.min = "0";
     ruleSensitivity.max = "100";
-    ruleSensitivity.value = "90";
-    ruleSensitivity.addEventListener("change", () => updateRule(ruleDiv));
+    ruleSensitivity.value = "95";
+    ruleSensitivity.addEventListener("change", () => updateRule(ruleDiv, ruleSensitivity));
+    ruleSensitivity.addEventListener("pointermove", () => updateSensitivityDisplay(ruleDiv));
     ruleDiv.appendChild(ruleSensitivity);
 
     const ruleDelete = document.createElement("button");
@@ -81,15 +88,31 @@ function saveUrl(this: HTMLInputElement) {
     return updateRule(ruleDiv);
 }
 
-// Updates rule settings in storage
-function updateRule(ruleDiv: HTMLDivElement) {
-    const urlInput = getElementByClassName(ruleDiv, "ruleurlinput") as HTMLInputElement | undefined;
+// Updates the rule display when the slider is slid
+function updateSensitivityDisplay(ruleDiv: HTMLDivElement) {
     const thresholdSlider = getElementByClassName(ruleDiv, "rulesensitivity") as HTMLInputElement | undefined;
-    if (urlInput === undefined || thresholdSlider === undefined) {
+    const thresholdDisplay = getElementByClassName(ruleDiv, "sensitivitydisplay") as HTMLInputElement | undefined;
+    if (thresholdSlider === undefined || thresholdDisplay === undefined) {
         return;
     }
+    thresholdDisplay.value = thresholdSlider.value;
+}
+
+// Updates rule settings in storage
+function updateRule(ruleDiv: HTMLDivElement, inputElement?: HTMLInputElement) {
+    const urlInput = getElementByClassName(ruleDiv, "ruleurlinput") as HTMLInputElement | undefined;
+    const thresholdSlider = getElementByClassName(ruleDiv, "rulesensitivity") as HTMLInputElement | undefined;
+    const thresholdDisplay = getElementByClassName(ruleDiv, "sensitivitydisplay") as HTMLInputElement | undefined;
+    if (urlInput === undefined || thresholdSlider === undefined || thresholdDisplay === undefined) {
+        return;
+    }
+    if (inputElement === undefined) {
+        inputElement = thresholdSlider;
+    }
     const url = urlInput.value;
-    const threshold = thresholdSlider.value;
+    const threshold = inputElement.value;
+    thresholdSlider.value = threshold;
+    thresholdDisplay.value = threshold;
     return chrome.storage.sync.set({[url]: threshold});
 }
 

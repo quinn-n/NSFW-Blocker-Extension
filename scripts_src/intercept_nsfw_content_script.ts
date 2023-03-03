@@ -9,7 +9,20 @@ This script works in two basic steps:
 hideAddedImages();
 hideImagesAffectedByRules();
 
-unhideSafeImages();
+
+type NSFWResponseData = {
+    drawings: number;
+    hentai: number;
+    neutral: number;
+    porn: number;
+    sexy: number;
+    is_nsfw: boolean;
+};
+
+type NSFWRawResponseData = {
+    data: NSFWResponseData;
+};
+
 
 const mutationObservers = new Map<Node, MutationObserver>();
 
@@ -20,8 +33,7 @@ function hideImagesAffectedByRules() {
             // NOTE: This is pretty slow, but there doesn't seem to be a good way to filter by
             // backgroundImage
             const nodes = document.getElementsByTagName("*");
-            // console.log("Scanning", nodes.length, "initial nodes.");
-            hideImages(nodes, urls);
+            verifyNodes(nodes, urls);
         }
     );
 }
@@ -33,12 +45,14 @@ function hideAddedImages() {
             const observer = new MutationObserver(
                 function(mutationList) {
                     for (const mutation of mutationList) {
-                        hideImages(mutation.addedNodes, ruleUrls);
+                        verifyNodes(mutation.addedNodes, ruleUrls);
 
+                        /*
                         // Remove observers for deleted nodes
                         for (const node of mutation.removedNodes) {
                             removeMutationObserver(node);
                         }
+                        */
                     }
                 }
             );
@@ -71,30 +85,20 @@ function removeMutationObserver(node: Node) {
 function hideImagesAddedToElement(mutationList: MutationRecord[], ruleUrls: string[]) {
     for (const mutation of mutationList) {
         if (mutation.attributeName === "style") {
-            console.log("Got mutation to element", mutation.target);
-            if (shouldHideNode(mutation.target, ruleUrls)) {
-                hideNode(mutation.target);
+            if (nodeHasRule(mutation.target, ruleUrls)) {
+                verifyNode(mutation.target);
             }
         }
     }
 }
 
-// Sets up the callbacks to unhide images marked safe by the content script
-function unhideSafeImages() {
-    chrome.runtime.onMessage.addListener(
-        function(url) {
-            unhideImageByURL(url);
-        }
-    );
-}
-
-// Recursively hides all images with an applicable ruleUrl
-function hideImages(nodes: NodeList | HTMLCollectionOf<Element>, ruleUrls: string[]) {
+// Recursively hides and verifies all images with an applicable ruleUrl
+function verifyNodes(nodes: NodeList | HTMLCollectionOf<Element>, ruleUrls: string[]) {
     for (const node of nodes) {
-        addMutationObserver(node);
-        hideImages(node.childNodes, ruleUrls);
-        if (shouldHideNode(node, ruleUrls)) {
-            hideNode(node);
+        // addMutationObserver(node);
+        verifyNodes(node.childNodes, ruleUrls);
+        if (nodeHasRule(node, ruleUrls)) {
+            verifyNode(node);
         }
     }
 }
@@ -108,9 +112,29 @@ function unhideImageByURL(src: string) {
     }
 }
 
-// Verifies that a node is SFW before displaying it
+// Verifies that an image is SFW before displaying it
 function verifyNode(node: Node) {
+    const url = getNodeURL(node);
+    if (url === undefined) {
+        return new Promise((resolve, reject) => reject("Undefined node url"));
+    }
     hideNode(node);
+    return shouldBlockImage(url).then(
+        function(shouldBlock) {
+            if (!shouldBlock) {
+                unhideNode(node);
+                // console.log("Showing image", node);
+            } else {
+                // console.log("Hiding image", node);
+            }
+        },
+        (reason) => console.log(reason)
+    );
+}
+
+// Queries a service worker about a given url
+function shouldBlockImage(url: string): Promise<boolean> {
+    return chrome.runtime.sendMessage(url);
 }
 
 // Hides a node
@@ -125,44 +149,44 @@ function unhideNode(node: Node) {
     element.style.visibility = "";
 }
 
-// Returns true if a node should be hidden
-function shouldHideNode(node: Node, ruleUrls: string[]) {
+// Returns true if a node has an applicable rule
+function nodeHasRule(node: Node, ruleUrls: string[]) {
+    const nodeUrl = getNodeURL(node);
+    if (nodeUrl === undefined) {
+        return false;
+    }
     const element = node as HTMLElement;
-    var style;
-    try {
-        style = document.defaultView?.getComputedStyle(element);
-    // Filter out elements like scripts that have no style
-    } catch (error) {
-        return false;
+
+    for (const url of ruleUrls) {
+        if (nodeUrl.includes(url)) {
+            if (element.style.visibility !== "" && element.style.visibility !== "hidden") {
+                console.warn("Got non-empty visibility", element.style.visibility);
+            }
+            return true;
+        }
     }
-    if (style === undefined) {
-        return false;
-    }
-    if (node.nodeName !== "IMG" && !style.backgroundImage.includes("url")) {
-        return false;
-    }
+    return false;
+}
+
+
+// Gets the URL from either an image element or an element with a background-image
+// Returns undefined if there is no image
+function getNodeURL(node: Node) {
     if (node.nodeName === "IMG") {
         const img = node as HTMLImageElement;
-        for (const url of ruleUrls) {
-            if (img.src.includes(url)) {
-                if (img.style.visibility !== "" && img.style.visibility !== "hidden") {
-                    console.warn("Got non-empty visibility", img.style.visibility);
-                }
-                return true;
-            }
-        }
+        return img.src;
     } else {
-        for (const url of ruleUrls) {
-            if (style.backgroundImage.includes(url)) {
-                // console.log("Hiding backgroundImage", style.backgroundImage, "for element", element);
-                if (element.style.visibility !== "" && element.style.visibility !== "hidden") {
-                    console.warn("Got non-empty visibility", element.style.visibility);
-                }
-                return true;
-            }
+        const element = node as HTMLElement;
+        var style;
+        try {
+            style = document.defaultView?.getComputedStyle(element);
+        } catch (error) {
+            return undefined;
         }
+        return style?.backgroundImage;
     }
 }
+
 
 // Returns a promise with the url rules when it resolves
 function getUrlRules() {

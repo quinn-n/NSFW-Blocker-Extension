@@ -14,7 +14,9 @@
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["scripts/intercept_nsfw_content_script.js"]
+            "js": [
+                "scripts/intercept_nsfw_content_script.js"
+            ]
         }
     ],
     "permissions": [
