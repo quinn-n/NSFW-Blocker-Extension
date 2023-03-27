@@ -40,7 +40,8 @@ namespace NSFWServiceWorker {
 
     // Returns a promise which resolves to a dict containing nsfw information from the server
     function getImageNSFWData(url: string) {
-        const requestUrl = "https://youtubenotifier.com:8000/?url=" + url;
+        // const requestUrl = "https://youtubenotifier.com:8000/?url=" + url;
+        const requestUrl = "http://localhost:8000/?url=" + url;
         // Get safe value from server
         const p = new Promise<NSFWResponseData>(function(resolve, reject) {
             fetch(requestUrl).then(

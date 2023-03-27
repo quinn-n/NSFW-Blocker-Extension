@@ -64,7 +64,6 @@ function hideAddedImages() {
 // Adds a MutationObserver for a node
 // Because some sites update the background-image style rule later for some reason?
 function addMutationObserver(node: Node) {
-    // console.log("Adding mutation observer to", node);
     getUrlRules().then(
         function(ruleUrls) {
             const observer = new MutationObserver((mutations) => hideImagesAddedToElement(mutations, ruleUrls));
@@ -123,9 +122,6 @@ function verifyNode(node: Node) {
         function(shouldBlock) {
             if (!shouldBlock) {
                 unhideNode(node);
-                // console.log("Showing image", node);
-            } else {
-                // console.log("Hiding image", node);
             }
         },
         (reason) => console.log(reason)
@@ -183,7 +179,7 @@ function getNodeURL(node: Node) {
         } catch (error) {
             return undefined;
         }
-        return style?.backgroundImage;
+        return style?.backgroundImage.substring(5, style.backgroundImage.length - 2);
     }
 }
 
