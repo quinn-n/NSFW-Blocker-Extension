@@ -8,7 +8,7 @@
         "default_icon": "no_under_18.png"
     },
     "background": {
-        "service_worker": "scripts/intercept_nsfw_service_worker.js",
+        "service_worker": "scripts/intercept_nsfw_service_worker.mjs",
         "type": "module"
     },
     "content_scripts": [

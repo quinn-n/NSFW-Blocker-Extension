@@ -1,3 +1,5 @@
+import { Cache } from "./cache.mjs";
+
 namespace NSFWServiceWorker {
 
     addMessageListener();
@@ -39,25 +41,26 @@ namespace NSFWServiceWorker {
 
 
     // Returns a promise which resolves to a dict containing nsfw information from the server
-    function getImageNSFWData(url: string) {
-        // const requestUrl = "https://youtubenotifier.com:8000/?url=" + url;
-        const requestUrl = "http://localhost:8000/?url=" + url;
-        // Get safe value from server
-        const p = new Promise<NSFWResponseData>(function(resolve, reject) {
-            fetch(requestUrl).then(
-                function(response) {
-                    if (response.status !== 200) {
-                        reject("Got non-200 response from server " + String(response.status) + " for url " + String(url));
+    const getImageNSFWData = Cache.asyncCache<string, NSFWResponseData>(30 * 60)(
+        (url: string) => {
+            const requestUrl = "https://youtubenotifier.com:8000/?url=" + url;
+            // Get safe value from server
+            const p = new Promise<NSFWResponseData>(function(resolve, reject) {
+                fetch(requestUrl).then(
+                    function(response) {
+                        if (response.status !== 200) {
+                            reject("Got non-200 response from server " + String(response.status) + " for url " + String(url));
+                        }
+                        response.json().then(
+                            (responseJson: NSFWRawResponseData) => resolve(responseJson.data),
+                            (reason) => reject("Failed to parse JSON for reason" + String(reason))
+                        );
                     }
-                    response.json().then(
-                        (responseJson: NSFWRawResponseData) => resolve(responseJson.data),
-                        (reason) => reject("Failed to parse JSON for reason" + String(reason))
-                    );
-                }
-            );
-        });
-        return p;
-    }
+                );
+            });
+            return p;
+        }
+    );
 
 
     // Returns a promise that resolves to a rule for a given url, if one exists.
