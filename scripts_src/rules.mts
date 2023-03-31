@@ -45,7 +45,7 @@ function createRuleDiv() {
 
     const sensitivityDisplay = document.createElement("input");
     sensitivityDisplay.className = "sensitivitydisplay";
-    sensitivityDisplay.value = "95";
+    sensitivityDisplay.value = "90";
     sensitivityDisplay.addEventListener("change", () => updateRule(ruleDiv, sensitivityDisplay));
     ruleDiv.appendChild(sensitivityDisplay);
 
@@ -54,7 +54,7 @@ function createRuleDiv() {
     ruleSensitivity.type = "range";
     ruleSensitivity.min = "0";
     ruleSensitivity.max = "100";
-    ruleSensitivity.value = "95";
+    ruleSensitivity.value = "90";
     ruleSensitivity.addEventListener("change", () => updateRule(ruleDiv, ruleSensitivity));
     ruleSensitivity.addEventListener("pointermove", () => updateSensitivityDisplay(ruleDiv));
     ruleDiv.appendChild(ruleSensitivity);
