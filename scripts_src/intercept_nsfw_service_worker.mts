@@ -25,6 +25,11 @@ namespace NSFWServiceWorker {
             // Get safe value from server
             getImageNSFWData(url).then(
                 function(data) {
+                    if (data === undefined) {
+                        console.log("got undefined data for url", url, "assuming safe non-image");
+                        resolve(false);
+                        return;
+                    }
                     const safeValue = data.drawings + data.neutral;
                     thresholdPromise.then(
                         function(rule) {

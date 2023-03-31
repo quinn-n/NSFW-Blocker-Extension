@@ -7,7 +7,7 @@ This script works in two basic steps:
 */
 
 hideAddedImages();
-hideImagesAffectedByRules();
+hideImagesAddedOnPageLoad();
 
 
 type NSFWResponseData = {
@@ -24,12 +24,10 @@ type NSFWRawResponseData = {
 };
 
 
-const mutationObservers = new Map<Node, MutationObserver>();
-
 // Hids all images loaded on page with an applicable rule
-function hideImagesAffectedByRules() {
+function hideImagesAddedOnPageLoad() {
     getUrlRules().then(
-        function(urls) {
+        (urls) => {
             // NOTE: This is pretty slow, but there doesn't seem to be a good way to filter by
             // backgroundImage
             const nodes = document.getElementsByTagName("*");
@@ -41,72 +39,50 @@ function hideImagesAffectedByRules() {
 // Hides all images added to the DOM after page load with an applicable rule
 function hideAddedImages() {
     getUrlRules().then(
-        function(ruleUrls) {
+        (ruleUrls) => {
             const observer = new MutationObserver(
-                function(mutationList) {
+                (mutationList) => {
                     for (const mutation of mutationList) {
-                        verifyNodes(mutation.addedNodes, ruleUrls);
-
-                        /*
-                        // Remove observers for deleted nodes
-                        for (const node of mutation.removedNodes) {
-                            removeMutationObserver(node);
+                        if (mutation.attributeName === "style" || mutation.target.nodeName === "IMG") {
+                            /*
+                            If there's a difference between the old style's hidden attribute and the new style's hidden attribute
+                            skip the mutation to avoid infinite loops.
+                            */
+                            if (!shouldProcessMutation(mutation)) {
+                                continue;
+                            }
+                            if (nodeHasRule(mutation.target, ruleUrls)) {
+                                verifyNode(mutation.target);
+                            }
                         }
-                        */
+                        verifyNodes(mutation.addedNodes, ruleUrls);
                     }
                 }
             );
-            observer.observe(document, {childList: true, subtree: true, attributes: true});
+            observer.observe(document, {childList: true, subtree: true, attributes: true, attributeFilter: ["style", "src"], attributeOldValue: true});
         }
     );
 }
 
-// Adds a MutationObserver for a node
-// Because some sites update the background-image style rule later for some reason?
-function addMutationObserver(node: Node) {
-    getUrlRules().then(
-        function(ruleUrls) {
-            const observer = new MutationObserver((mutations) => hideImagesAddedToElement(mutations, ruleUrls));
-            observer.observe(node, {attributes: true});
-            mutationObservers.set(node, observer);
-        }
-    );
-}
-
-// Removes a MutationObserver for a node
-function removeMutationObserver(node: Node) {
-    const observer = mutationObservers.get(node);
-    observer?.disconnect();
-    mutationObservers.delete(node);
-}
-
-// Hides images added to an element after it's been added to the document
-function hideImagesAddedToElement(mutationList: MutationRecord[], ruleUrls: string[]) {
-    for (const mutation of mutationList) {
-        if (mutation.attributeName === "style") {
-            if (nodeHasRule(mutation.target, ruleUrls)) {
-                verifyNode(mutation.target);
-            }
-        }
+// Returns true if a style mutation should be processed, or false if it should be skipped.
+function shouldProcessMutation(mutation: MutationRecord) {
+    if (mutation.oldValue === null) {
+        return true;
     }
+    const oldStyle = mutation.oldValue.split(" ");
+    const oldHidden = oldStyle.includes("visibility")? oldStyle[oldStyle.indexOf("visibility") + 1] === "hidden;" : false;
+
+    const ele = mutation.target as HTMLElement;
+    const newHidden = ele.style.visibility === "hidden";
+
+    return newHidden !== oldHidden;
 }
 
 // Recursively hides and verifies all images with an applicable ruleUrl
 function verifyNodes(nodes: NodeList | HTMLCollectionOf<Element>, ruleUrls: string[]) {
     for (const node of nodes) {
-        // addMutationObserver(node);
-        verifyNodes(node.childNodes, ruleUrls);
         if (nodeHasRule(node, ruleUrls)) {
             verifyNode(node);
-        }
-    }
-}
-
-// Unhides all images with a matching src in the document
-function unhideImageByURL(src: string) {
-    for (const img of document.getElementsByTagName("img")) {
-        if (img.src === src) {
-            unhideNode(img);
         }
     }
 }
@@ -119,7 +95,7 @@ function verifyNode(node: Node) {
     }
     hideNode(node);
     return shouldBlockImage(url).then(
-        function(shouldBlock) {
+        (shouldBlock) => {
             if (!shouldBlock) {
                 unhideNode(node);
             }
@@ -177,6 +153,9 @@ function getNodeURL(node: Node) {
         try {
             style = document.defaultView?.getComputedStyle(element);
         } catch (error) {
+            return undefined;
+        }
+        if (style?.backgroundImage === "none") {
             return undefined;
         }
         return style?.backgroundImage.substring(5, style.backgroundImage.length - 2);
