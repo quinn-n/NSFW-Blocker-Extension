@@ -48,7 +48,7 @@ namespace NSFWServiceWorker {
     // Returns a promise which resolves to a dict containing nsfw information from the server
     const getImageNSFWData = Cache.asyncCache<string, NSFWResponseData>(30 * 60)(
         (url: string) => {
-            const requestUrl = "https://youtubenotifier.com:8000/detect";
+            const requestUrl = "https://nsfwblocker.com:8000/detect";
             // Get safe value from server
             const p = new Promise<NSFWResponseData>(function(resolve, reject) {
                 const headers = new Headers({"url": url});
